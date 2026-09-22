@@ -1,0 +1,43 @@
+name: Desktop checks
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Linux system dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential autoconf automake libtool libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev libdbus-1-dev
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run lint
+      - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+      - run: cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+      - run: npm run tauri build -- --debug --no-bundle
+
+      - name: Save development binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: convo-dev-${{ matrix.os }}
+          path: |
+            src-tauri/target/debug/convo
+            src-tauri/target/debug/convo.exe
+          if-no-files-found: error
