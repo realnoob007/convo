@@ -567,7 +567,9 @@ mod tests {
         let preview = prepare_cached(&take, dir.path()).unwrap();
         assert_eq!(std::fs::read(&preview.src).unwrap(), wav(&pcm));
         let old_time = std::time::UNIX_EPOCH + std::time::Duration::from_secs(1000);
-        std::fs::File::open(&preview.src)
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(&preview.src)
             .unwrap()
             .set_modified(old_time)
             .unwrap();
