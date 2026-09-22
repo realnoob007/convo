@@ -101,6 +101,8 @@ cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D w
 npm run tauri build
 ```
 
+Local validation: **50 Rust tests and 22 frontend tests**, TypeScript/Vite build, lint, Clippy, and a macOS development bundle. Compatible endpoint routing is covered by local HTTP integration tests; individual third-party services still need testing with their supported models.
+
 Build on the target OS. Microphone capture depends on OS permissions and the platform WebView. The CI workflow checks macOS, Windows, and Linux; its artifacts are development binaries, not signed installers.
 
 </details>
